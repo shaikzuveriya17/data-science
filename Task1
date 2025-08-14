@@ -1,0 +1,90 @@
+
+
+# ------------------------
+# 1. Import Required Libraries
+# ------------------------
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler, OneHotEncoder
+from sklearn.compose import ColumnTransformer
+from sklearn.pipeline import Pipeline
+from sklearn.impute import SimpleImputer
+
+# ------------------------
+# 2. Extract (Load Data)
+# ------------------------
+# Example CSV dataset (replace with your dataset path)
+data_path = "data.csv"
+df = pd.read_csv(data_path)
+
+print("📌 Initial Data Snapshot:")
+print(df.head())
+
+# ------------------------
+# 3. Identify Features & Target
+# ------------------------
+target_column = "target"  # Change to your target column name
+X = df.drop(columns=[target_column])
+y = df[target_column]
+
+# Identify column types
+numeric_features = X.select_dtypes(include=['int64', 'float64']).columns
+categorical_features = X.select_dtypes(include=['object']).columns
+
+# ------------------------
+# 4. Transformation Pipelines
+# ------------------------
+# Numeric transformation: Handle missing values + Standardization
+numeric_transformer = Pipeline(steps=[
+    ("imputer", SimpleImputer(strategy="mean")),
+    ("scaler", StandardScaler())
+])
+
+# Categorical transformation: Handle missing values + One-Hot Encoding
+categorical_transformer = Pipeline(steps=[
+    ("imputer", SimpleImputer(strategy="most_frequent")),
+    ("encoder", OneHotEncoder(handle_unknown="ignore"))
+])
+
+# Combine transformations
+preprocessor = ColumnTransformer(
+    transformers=[
+        ("num", numeric_transformer, numeric_features),
+        ("cat", categorical_transformer, categorical_features)
+    ]
+)
+
+# ------------------------
+# 5. Create Final Pipeline
+# ------------------------
+data_pipeline = Pipeline(steps=[
+    ("preprocessor", preprocessor)
+])
+
+# ------------------------
+# 6. Apply Transformation
+# ------------------------
+X_processed = data_pipeline.fit_transform(X)
+
+print("\n✅ Data Transformation Complete!")
+print("Processed Shape:", X_processed.shape)
+
+# ------------------------
+# 7. Train-Test Split
+# ------------------------
+X_train, X_test, y_train, y_test = train_test_split(
+    X_processed, y, test_size=0.2, random_state=42
+)
+
+print("\n📊 Training Data Shape:", X_train.shape)
+print("📊 Testing Data Shape:", X_test.shape)
+
+# ------------------------
+# 8. Load Processed Data (Save to CSV)
+# ------------------------
+pd.DataFrame(X_train).to_csv("X_train_processed.csv", index=False)
+pd.DataFrame(X_test).to_csv("X_test_processed.csv", index=False)
+y_train.to_csv("y_train.csv", index=False)
+y_test.to_csv("y_test.csv", index=False)
+
+print("\n💾 Processed data saved successfully!")
