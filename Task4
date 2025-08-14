@@ -1,0 +1,61 @@
+# Import PuLP library
+from pulp import LpMaximize, LpProblem, LpVariable, lpSum, value
+
+# -------------------------------
+# Business Problem Description
+# -------------------------------
+# A factory produces two products: A and B
+# Each product requires time on two machines:
+# Product A: 3 hrs on Machine 1, 2 hrs on Machine 2, Profit = $40
+# Product B: 4 hrs on Machine 1, 3 hrs on Machine 2, Profit = $50
+# Machine 1 available: 240 hrs
+# Machine 2 available: 180 hrs
+# Goal: Maximize profit
+
+# -------------------------------
+# Step 1: Define the LP Problem
+# -------------------------------
+model = LpProblem(name="product-mix-optimization", sense=LpMaximize)
+
+# -------------------------------
+# Step 2: Define Decision Variables
+# -------------------------------
+# Number of units to produce for Product A and B
+A = LpVariable(name="Product_A", lowBound=0, cat='Integer')
+B = LpVariable(name="Product_B", lowBound=0, cat='Integer')
+
+# -------------------------------
+# Step 3: Define Objective Function
+# -------------------------------
+# Maximize total profit
+model += 40 * A + 50 * B, "Total_Profit"
+
+# -------------------------------
+# Step 4: Add Constraints
+# -------------------------------
+# Machine 1 constraint: 3A + 4B ≤ 240
+model += 3 * A + 4 * B <= 240, "Machine_1_Hours"
+
+# Machine 2 constraint: 2A + 3B ≤ 180
+model += 2 * A + 3 * B <= 180, "Machine_2_Hours"
+
+# -------------------------------
+# Step 5: Solve the Model
+# -------------------------------
+model.solve()
+
+# -------------------------------
+# Step 6: Display Results
+# -------------------------------
+print("✅ Optimization Results")
+print(f"Optimal units of Product A: {A.varValue}")
+print(f"Optimal units of Product B: {B.varValue}")
+print(f"Maximum Profit: ${value(model.objective)}")
+
+# -------------------------------
+# Step 7: Insights
+# -------------------------------
+print("\n📊 Business Insights:")
+print("- Produce the above quantities to maximize profit.")
+print("- All constraints are satisfied (machine hours).")
+print("- This model helps in efficient resource allocation.")
